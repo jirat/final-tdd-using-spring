@@ -1,8 +1,12 @@
 package com.bank.djackatron2.service
 
-import org.springframework.stereotype.Service
+import com.bank.djackatron2.domain.TransferReceipt
 
-@Service
 interface TransferService {
 
+    fun transfer(amount: Double, srcAcctId: String, destAcctId: String): TransferReceipt
+
+    fun setMinimumTransferAmount(minimumTransferAmount: Double)
+
+    fun setTimeService(timeService: TimeService)
 }

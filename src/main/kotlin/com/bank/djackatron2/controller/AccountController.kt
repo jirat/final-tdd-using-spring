@@ -19,10 +19,11 @@ class AccountController(
     fun handleById(@PathVariable("id") accId: String) =
         repository.findById(accId)
 
-//    @RequestMapping("/{srcId}/transfer/{amount}/to/{destId}")
-//    @Throws(InsufficientFundsException::class)
-//    fun handleTransfer(@PathVariable("srcId") String srcId,
-//                       @PathVariable("amount") double amount,
-//                       @PathVariable("destId") String destId) =
-//        service.transfer(amount, srcId, destId)
+    @RequestMapping("/{srcId}/transfer/{amount}/to/{destId}")
+    @Throws(InsufficientFundsException::class)
+    fun handleTransfer(
+        @PathVariable("srcId") srcId: String,
+        @PathVariable("amount") amount: Double,
+        @PathVariable("destId") destId: String
+    ) = service.transfer(amount, srcId, destId)
 }

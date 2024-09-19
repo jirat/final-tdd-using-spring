@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
 class AccountControllerTest {
@@ -27,7 +28,21 @@ class AccountControllerTest {
         //when
         val result = controller.handleById(accId)
 
+        //then
         assertEquals(account, result)
+    }
+
+    @Test
+    fun testHandleTransfer() {
+        //given
+        val srcId = "A123"
+        val destId = "B123"
+
+        //when
+        controller.handleTransfer(srcId, 100.00, destId)
+
+        //then
+        verify(service).transfer(100.00, srcId, destId)
     }
 
 }
