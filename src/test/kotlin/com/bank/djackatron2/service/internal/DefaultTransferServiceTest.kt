@@ -203,4 +203,14 @@ class DefaultTransferServiceTest {
         } catch (ex: IllegalArgumentException) {
         }
     }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testNegativeTransferAmount() {
+        try {
+            transferService.transfer(-100.00, A123_ID, C456_ID)
+            fail("expected IllegalArgumentException")
+        } catch (ex: java.lang.IllegalArgumentException) {
+        }
+    }
 }
