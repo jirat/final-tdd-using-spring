@@ -9,6 +9,7 @@ import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companio
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.A123_INITIAL_BAL
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.C456_ID
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.C456_INITIAL_BAL
+import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.Z999_ID
 import com.bank.djackatron2.service.FeePolicy
 import com.bank.djackatron2.service.OutOfServiceException
 import com.bank.djackatron2.service.TimeService
@@ -26,6 +27,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import java.time.LocalTime
+import javax.security.auth.login.AccountNotFoundException
 import kotlin.test.fail
 
 @TestInstance(PER_CLASS)
@@ -166,6 +168,18 @@ class DefaultTransferServiceTest {
 
         assertThrows<InsufficientFundsException> { transferService.transfer(transferAmount, A123_ID, C456_ID)  }
         //fail("expected InsufficientFundsException");
+    }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testNonExistentSourceAccount() {
+        try {
+            transferService.transfer(1.00, Z999_ID, C456_ID)
+            fail("expected AccountNotFoundException")
+        } catch (ex: AccountNotFoundException) {
+        }
+
+        assertThat(accountRepository.findById(C456_ID).getBalance(), CoreMatchers.equalTo(C456_INITIAL_BAL))
     }
 
 }
