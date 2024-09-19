@@ -10,6 +10,7 @@ import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companio
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.C456_ID
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.C456_INITIAL_BAL
 import com.bank.djackatron2.service.FeePolicy
+import com.bank.djackatron2.service.OutOfServiceException
 import com.bank.djackatron2.service.TimeService
 import com.bank.djackatron2.service.TransferService
 import org.hamcrest.CoreMatchers
@@ -24,6 +25,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import java.time.LocalTime
+import kotlin.test.fail
 
 @TestInstance(PER_CLASS)
 class DefaultTransferServiceTest {
@@ -133,5 +135,25 @@ class DefaultTransferServiceTest {
         )
         //verify behavior
         verify(mockTimeService).isServiceAvailable(any<LocalTime>())
+    }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testTransferWithCheckingOutofTimeService() {
+        //given
+        val transferAmount = 100.00
+        val mockTimeService = mock(TimeService::class.java)
+        `when`(mockTimeService.isServiceAvailable(any<LocalTime>())).thenReturn(false)
+        transferService.setTimeService(mockTimeService)
+
+        //when
+        try {
+            val receipt = transferService.transfer(transferAmount, A123_ID, C456_ID)
+            fail()
+        } catch (e: OutOfServiceException) {
+            //then
+            //verify behavior
+            verify(mockTimeService).isServiceAvailable(any<LocalTime>())
+        }
     }
 }
