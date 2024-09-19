@@ -2,6 +2,7 @@ package com.bank.djackatron2.service.internal
 
 import com.bank.djackatron2.domain.Account
 import com.bank.djackatron2.domain.InsufficientFundsException
+import com.bank.djackatron2.domain.TransferReceipt
 import com.bank.djackatron2.repository.AccountRepository
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.A123_ID
@@ -9,6 +10,7 @@ import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companio
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.C456_ID
 import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.C456_INITIAL_BAL
 import com.bank.djackatron2.service.FeePolicy
+import com.bank.djackatron2.service.TimeService
 import com.bank.djackatron2.service.TransferService
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert.assertThat
@@ -17,9 +19,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.mockito.ArgumentMatchers.anyDouble
-import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import java.time.LocalTime
 
 @TestInstance(PER_CLASS)
 class DefaultTransferServiceTest {
@@ -94,5 +98,40 @@ class DefaultTransferServiceTest {
         assertThat(receipt.getTransferAmount(), CoreMatchers.equalTo(transferAmount))
         assertThat(receipt.getFinalSourceAccount().getBalance(), CoreMatchers.equalTo(0.00))
         assertThat(receipt.getFinalDestinationAccount().getBalance(), CoreMatchers.equalTo(100.00))
+    }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testTransferWithCheckingTimeService() {
+        //given
+        val transferAmount = 100.00
+        val mockTimeService = mock(TimeService::class.java)
+        `when`(mockTimeService.isServiceAvailable(any<LocalTime>())).thenReturn(true)
+        transferService.setTimeService(mockTimeService)
+
+        //when
+        val receipt: TransferReceipt = transferService.transfer(transferAmount, A123_ID, C456_ID)
+
+        //then
+        assertThat(receipt.getTransferAmount(), CoreMatchers.equalTo(transferAmount))
+        assertThat(
+            receipt.getFinalSourceAccount().getBalance(),
+            CoreMatchers.equalTo(A123_INITIAL_BAL - transferAmount)
+        )
+        assertThat(
+            receipt.getFinalDestinationAccount().getBalance(),
+            CoreMatchers.equalTo(C456_INITIAL_BAL + transferAmount)
+        )
+
+        assertThat(
+            accountRepository.findById(A123_ID).getBalance(),
+            CoreMatchers.equalTo(A123_INITIAL_BAL - transferAmount)
+        )
+        assertThat(
+            accountRepository.findById(C456_ID).getBalance(),
+            CoreMatchers.equalTo(C456_INITIAL_BAL + transferAmount)
+        )
+        //verify behavior
+        verify(mockTimeService).isServiceAvailable(any<LocalTime>())
     }
 }

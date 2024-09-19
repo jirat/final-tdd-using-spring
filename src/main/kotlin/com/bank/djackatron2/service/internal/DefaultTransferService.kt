@@ -66,7 +66,7 @@ class DefaultTransferService(
     }
 
     override fun setTimeService(timeService: TimeService) {
-        TODO("Not yet implemented")
+        this.timeService = timeService
     }
 
 }
