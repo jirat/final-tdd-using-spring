@@ -223,4 +223,18 @@ class DefaultTransferServiceTest {
         } catch (ex: IllegalArgumentException) {
         }
     }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testCustomizedMinimumTransferAmount() {
+        transferService.transfer(1.00, A123_ID, C456_ID) // should be fine
+        transferService.setMinimumTransferAmount(10.00)
+        transferService.transfer(10.00, A123_ID, C456_ID) // fine against new minimum
+        try {
+            transferService.transfer(9.00, A123_ID, C456_ID) // violates new minimum!
+            fail("expected IllegalArgumentException on 9.00 transfer that violates 10.00 minimum")
+        } catch (ex: IllegalArgumentException) {
+        }
+    }
+
 }
