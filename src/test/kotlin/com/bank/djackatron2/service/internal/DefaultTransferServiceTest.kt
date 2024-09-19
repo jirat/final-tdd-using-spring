@@ -210,7 +210,17 @@ class DefaultTransferServiceTest {
         try {
             transferService.transfer(-100.00, A123_ID, C456_ID)
             fail("expected IllegalArgumentException")
-        } catch (ex: java.lang.IllegalArgumentException) {
+        } catch (ex: IllegalArgumentException) {
+        }
+    }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testTransferAmountLessThanOneCent() {
+        try {
+            transferService.transfer(0.009, A123_ID, C456_ID)
+            fail("expected IllegalArgumentException")
+        } catch (ex: IllegalArgumentException) {
         }
     }
 }
