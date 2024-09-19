@@ -237,4 +237,33 @@ class DefaultTransferServiceTest {
         }
     }
 
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testNonZeroFeePolicy() {
+        val flatFee = 5.00
+        val transferAmount = 95.00
+        transferService = DefaultTransferService(accountRepository, FlatFeePolicy(flatFee))
+        transferService.transfer(transferAmount, A123_ID, C456_ID)
+        assertThat(
+            accountRepository.findById(A123_ID).getBalance(),
+            CoreMatchers.equalTo(A123_INITIAL_BAL - transferAmount - flatFee)
+        )
+        assertThat(
+            accountRepository.findById(C456_ID).getBalance(),
+            CoreMatchers.equalTo(C456_INITIAL_BAL + transferAmount)
+        )
+    }
+
+    @Test
+    fun testMaximumTransferWithFlatFeePolicy() {
+        val flatFee = 5.00
+        val transferAmout = 99.00
+        transferService = DefaultTransferService(accountRepository, FlatFeePolicy(flatFee))
+        try {
+            transferService.transfer(transferAmout, A123_ID, C456_ID)
+            fail("expected InsufficientFundsException")
+        } catch (ex: InsufficientFundsException) {
+        }
+    }
+
 }
