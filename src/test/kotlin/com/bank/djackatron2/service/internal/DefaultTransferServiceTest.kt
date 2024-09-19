@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.api.assertThrows
 import org.mockito.ArgumentMatchers.anyDouble
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -156,4 +157,15 @@ class DefaultTransferServiceTest {
             verify(mockTimeService).isServiceAvailable(any<LocalTime>())
         }
     }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testInsufficientFunds() {
+        val overage = 9.00
+        val transferAmount = A123_INITIAL_BAL + overage
+
+        assertThrows<InsufficientFundsException> { transferService.transfer(transferAmount, A123_ID, C456_ID)  }
+        //fail("expected InsufficientFundsException");
+    }
+
 }
