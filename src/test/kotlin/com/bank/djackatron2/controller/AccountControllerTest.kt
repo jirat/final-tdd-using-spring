@@ -1,6 +1,5 @@
-package com.bank.djackatron2
+package com.bank.djackatron2.controller
 
-import com.bank.djackatron2.controller.AccountController
 import com.bank.djackatron2.domain.Account
 import com.bank.djackatron2.repository.AccountRepository
 import com.bank.djackatron2.service.TransferService
