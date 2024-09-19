@@ -182,4 +182,16 @@ class DefaultTransferServiceTest {
         assertThat(accountRepository.findById(C456_ID).getBalance(), CoreMatchers.equalTo(C456_INITIAL_BAL))
     }
 
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testNonExistentDestinationAccount() {
+        try {
+            transferService.transfer(1.00, A123_ID, Z999_ID)
+            fail("expected AccountNotFoundException")
+        } catch (ex: AccountNotFoundException) {
+        }
+
+        assertThat(accountRepository.findById(A123_ID).getBalance(), CoreMatchers.equalTo(A123_INITIAL_BAL))
+    }
+
 }
