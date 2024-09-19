@@ -194,4 +194,13 @@ class DefaultTransferServiceTest {
         assertThat(accountRepository.findById(A123_ID).getBalance(), CoreMatchers.equalTo(A123_INITIAL_BAL))
     }
 
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testZeroTransferAmount() {
+        try {
+            transferService.transfer(0.00, A123_ID, C456_ID)
+            fail("expected IllegalArgumentException")
+        } catch (ex: IllegalArgumentException) {
+        }
+    }
 }
