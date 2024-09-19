@@ -1,0 +1,98 @@
+package com.bank.djackatron2.service.internal
+
+import com.bank.djackatron2.domain.Account
+import com.bank.djackatron2.domain.InsufficientFundsException
+import com.bank.djackatron2.repository.AccountRepository
+import com.bank.djackatron2.repository.internal.SimpleAccountRepository
+import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.A123_ID
+import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.A123_INITIAL_BAL
+import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.C456_ID
+import com.bank.djackatron2.repository.internal.SimpleAccountRepository.Companion.C456_INITIAL_BAL
+import com.bank.djackatron2.service.FeePolicy
+import com.bank.djackatron2.service.TransferService
+import org.hamcrest.CoreMatchers
+import org.hamcrest.MatcherAssert.assertThat
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.mockito.ArgumentMatchers.anyDouble
+import org.mockito.Mockito
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
+
+@TestInstance(PER_CLASS)
+class DefaultTransferServiceTest {
+
+    private lateinit var accountRepository: AccountRepository
+    private lateinit var transferService: TransferService
+
+    @BeforeAll
+    fun setUp() {
+        accountRepository = SimpleAccountRepository()
+        val feePolicy = ZeroFeePolicy()
+
+        transferService = DefaultTransferService(accountRepository, feePolicy)
+
+        assertThat(accountRepository.findById(A123_ID).getBalance(), CoreMatchers.equalTo(A123_INITIAL_BAL))
+        assertThat(accountRepository.findById(C456_ID).getBalance(), CoreMatchers.equalTo(C456_INITIAL_BAL))
+    }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testTransfer() {
+        val transferAmount = 100.00
+
+        //when
+        val receipt = transferService.transfer(transferAmount, A123_ID, C456_ID)
+
+        //then
+        assertThat(receipt.getTransferAmount(), CoreMatchers.equalTo(transferAmount))
+        assertThat(
+            receipt.getFinalSourceAccount().getBalance(),
+            CoreMatchers.equalTo(A123_INITIAL_BAL - transferAmount)
+        )
+        assertThat(
+            receipt.getFinalDestinationAccount().getBalance(),
+            CoreMatchers.equalTo(C456_INITIAL_BAL + transferAmount)
+        )
+
+        assertThat(
+            accountRepository.findById(A123_ID).getBalance(),
+            CoreMatchers.equalTo(A123_INITIAL_BAL - transferAmount)
+        )
+        assertThat(
+            accountRepository.findById(C456_ID).getBalance(),
+            CoreMatchers.equalTo(C456_INITIAL_BAL + transferAmount)
+        )
+    }
+
+    @Test
+    @Throws(InsufficientFundsException::class)
+    fun testTransferUsingDynamicStub() {
+        //given
+        val transferAmount = 100.00
+        val srcAccId = "A123"
+        val srcAcc = Account(srcAccId, 100.00)
+        val desAccId = "C456"
+        val desAcc = Account(desAccId, 0.00)
+
+        val mockAccReop: AccountRepository = mock(AccountRepository::class.java)
+        `when`(mockAccReop.findById(srcAccId)).thenReturn(srcAcc)
+        `when`(mockAccReop.findById(desAccId)).thenReturn(desAcc)
+
+        val mockFeePolicy = mock(FeePolicy::class.java)
+        `when`(mockFeePolicy.calculateFee(anyDouble())).thenReturn(0.00)
+
+        val transferService: TransferService = DefaultTransferService(mockAccReop, mockFeePolicy)
+
+
+        //when
+        val receipt = transferService.transfer(transferAmount, srcAccId, desAccId)
+
+        //then
+        assertThat(receipt.getTransferAmount(), CoreMatchers.equalTo(transferAmount))
+        assertThat(receipt.getFinalSourceAccount().getBalance(), CoreMatchers.equalTo(0.00))
+        assertThat(receipt.getFinalDestinationAccount().getBalance(), CoreMatchers.equalTo(100.00))
+    }
+}

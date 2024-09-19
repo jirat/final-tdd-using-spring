@@ -15,6 +15,10 @@ data class Account(
     fun getId(): String = id
     fun getBalance(): Double = balance
 
+    fun setBalance(balance: Double) {
+        this.balance = balance
+    }
+
     fun debit(amount: Double) {
         assertValid(amount)
         if (amount > balance) throw InsufficientFundsException(this, amount)
