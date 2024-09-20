@@ -8,8 +8,10 @@ import com.bank.djackatron2.service.FeePolicy
 import com.bank.djackatron2.service.OutOfServiceException
 import com.bank.djackatron2.service.TimeService
 import com.bank.djackatron2.service.TransferService
+import org.springframework.stereotype.Service
 import java.time.LocalTime
 
+@Service
 class DefaultTransferService(
     private val accountRepository: AccountRepository,
     private val feePolicy: FeePolicy,
