@@ -20,8 +20,8 @@ class IntegrationITCase {
     fun dataSource(): DataSource {
         return EmbeddedDatabaseBuilder()
             .setType(EmbeddedDatabaseType.H2)
-            .addScript("classpath:jdbc/schema.sql")
-            .addScript("classpath:jdbc/test-data.sql").build()
+            .addScript("classpath:schema.sql")
+            .addScript("classpath:test-data.sql").build()
     }
 
     @Test
