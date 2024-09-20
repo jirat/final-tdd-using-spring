@@ -17,6 +17,7 @@ import com.bank.djackatron2.service.TransferService
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -36,7 +37,7 @@ class DefaultTransferServiceTest {
     private lateinit var accountRepository: AccountRepository
     private lateinit var transferService: TransferService
 
-    @BeforeAll
+    @BeforeEach
     fun setUp() {
         accountRepository = SimpleAccountRepository()
         val feePolicy = ZeroFeePolicy()
